@@ -9,10 +9,14 @@ public class Main {
         int boardHeight = rowCount * tileSize;
 
         JFrame jFrame = new JFrame("Pac Man");
-        jFrame.setVisible(true);
         jFrame.setSize(boardWidth, boardHeight);
         jFrame.setLocationRelativeTo(null);
         jFrame.setResizable(false);
-        jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        PacMan pacMan = new PacMan();
+        jFrame.add(pacMan);
+        jFrame.pack();
+        jFrame.setVisible(true);
+
     }
 }
