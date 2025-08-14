@@ -10,6 +10,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     public void actionPerformed(ActionEvent e) {
         move();
         repaint();
+        if(gameOver){
+            gameLoop.stop();
+        }
     }
 
     @Override
@@ -22,6 +25,16 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
     @Override
     public void keyReleased(KeyEvent e) {
+
+        if(gameOver){
+            loadMap();
+            resetPositions();
+            lives = 3;
+            score = 0;
+            gameOver = false;
+            gameLoop.start();
+        }
+
         if(e.getKeyCode() == KeyEvent.VK_UP){
             pacman.updateDirection('U');
         }
@@ -107,6 +120,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                 this.velocityX = tileSize/4;
                 this.velocityY = 0;
             }
+       }
+
+       void reset(){
+           this.x = this.startX;
+           this.y = this.startY;
        }
     }
 
@@ -284,6 +302,15 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
        //check ghost collisions
        for(Block ghost : ghosts) {
 
+           if(collision(ghost, pacman)){
+               lives -= 1;
+               if(lives == 0){
+                   gameOver = true;
+                   return;
+               }
+               resetPositions();
+           }
+
            if(ghost.y == tileSize*9 && ghost.direction != 'U' && ghost.direction != 'D') {
                ghost.updateDirection('U');
            }
@@ -309,6 +336,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
            }
        }
        foods.remove(foodEaten);
+
+       if(foods.isEmpty()) {
+           loadMap();
+           resetPositions();
+       }
    }
 
    boolean collision(Block a, Block b) {
@@ -316,5 +348,16 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                 a.x + a.width > b.x &&
                 a.y < b.y + b.height &&
                 a.y + a.height > b.y;
+   }
+
+   void resetPositions() {
+       pacman.reset();
+       pacman.velocityX = 0;
+       pacman.velocityY = 0;
+       for (Block ghost : ghosts) {
+           ghost.reset();
+           char newDirection = directions[random.nextInt(4)];
+           ghost.updateDirection(newDirection);
+       }
    }
 }
