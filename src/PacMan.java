@@ -164,6 +164,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
     //Timer
     Timer gameLoop;
+    char[] directions = {'U', 'D', 'L', 'R'};
+    Random random = new Random();
+    int score = 0;
+    int lives = 3;
+    boolean gameOver = false;
 
    PacMan() {
        setPreferredSize(new Dimension(boardWidth, boardHeight));
@@ -185,6 +190,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
        pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
 
        loadMap();
+       for(Block ghost:ghosts){
+           char newDirection = directions[random.nextInt(4)];
+           ghost.updateDirection(newDirection);
+       }
        gameLoop = new Timer(50, this);
        gameLoop.start();
    }
@@ -250,6 +259,13 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
        for (Block food: foods) {
            g.fillRect(food.x, food.y, food.width, food.height);
        }
+       //score
+       g.setFont(new Font("Arial", Font.PLAIN, 18));
+       if(gameOver) {
+           g.drawString("Game Over: " + String.valueOf(score), tileSize/2, tileSize/2);
+       } else {
+           g.drawString("x" + String.valueOf(lives) + "Score: " + String.valueOf(score), tileSize/2, tileSize/2);
+       }
    }
 
    public void move() {
@@ -265,6 +281,34 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             }
        }
 
+       //check ghost collisions
+       for(Block ghost : ghosts) {
+
+           if(ghost.y == tileSize*9 && ghost.direction != 'U' && ghost.direction != 'D') {
+               ghost.updateDirection('U');
+           }
+
+           ghost.x += ghost.velocityX;
+           ghost.y += ghost.velocityY;
+           for(Block wall:walls){
+               if(collision(ghost, wall) || ghost.x <= 0 ||  ghost.x + ghost.width >= boardWidth){
+                   ghost.x -= ghost.velocityX;
+                   ghost.y -= ghost.velocityY;
+                   char newDirection = directions[random.nextInt(4)];
+                   ghost.updateDirection(newDirection);
+               }
+           }
+       }
+
+       //check food collision
+       Block foodEaten = null;
+       for (Block food: foods) {
+           if(collision(pacman, food)){
+               foodEaten = food;
+               score += 10;
+           }
+       }
+       foods.remove(foodEaten);
    }
 
    boolean collision(Block a, Block b) {
