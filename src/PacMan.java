@@ -26,6 +26,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     @Override
     public void keyReleased(KeyEvent e) {
 
+        //pause
+        pause(e);
+
         if(gameOver){
             loadMap();
             resetPositions();
@@ -134,6 +137,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
    private int boardWidth = columnCount * tileSize;
    private int boardHeight = rowCount * tileSize;
 
+   boolean paused = false;
    // Ghost & Wall Images
     private Image wallImage;
     private Image blueGhostImage;
@@ -358,6 +362,21 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
            ghost.reset();
            char newDirection = directions[random.nextInt(4)];
            ghost.updateDirection(newDirection);
+       }
+   }
+
+   void pause(KeyEvent e){
+       if(e.getKeyCode() == KeyEvent.VK_P){
+           if(paused){
+               gameLoop.start();
+                   System.out.println("Unpause");
+               paused = false;
+           }
+           else {
+               gameLoop.stop();
+               System.out.println("Pause");
+               paused = true;
+           }
        }
    }
 }
