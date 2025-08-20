@@ -163,7 +163,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             "XXXX XXXX XXXX XXXX",
             "OOOX X       X XOOO",
             "XXXX X XXrXX X XXXX",
-            "O       bpo       O",
+            "O                 O",
             "XXXX X XXXXX X XXXX",
             "OOOX X       X XOOO",
             "XXXX X XXXXX X XXXX",
@@ -200,9 +200,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             "X       XXX       X",
             "XXXXXXXXXXXXXXXXXXX"
     };
-
-
-
 
     //HashSet
     HashSet<Block> walls;
@@ -362,6 +359,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
        pacman.x += pacman.velocityX;
        pacman.y += pacman.velocityY;
 
+
+
        //check void collisions
        if (pacman.x < 0) {
            pacman.x = 21*tileSize;
@@ -370,9 +369,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
        if (pacman.x > 21*tileSize) {
            pacman.x = 0;
        }
-
-
-
 
        //check wall collisions
        for  (Block wall: walls) {
@@ -395,9 +391,54 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                resetPositions();
            }
 
+           //brute force solution to avoid infinite glitch
            if(ghost.y == tileSize*9 && ghost.direction != 'U' && ghost.direction != 'D') {
                ghost.updateDirection('U');
            }
+
+           //look out for PacMan DONT FORGERT TILESIZE
+                //#1 check if blocks around are not walls
+
+                    //#2 check if pacman is in +y
+
+
+
+                    // for same x
+//           System.out.println('X');
+//           System.out.println(ghost.x/tileSize);
+//           System.out.println('y');
+//           System.out.println(ghost.y/tileSize);
+
+           for (int row = (ghost.y/tileSize) + 1; row < tileMap.length; row++) { //++Y
+                char cell = tileMap[row].charAt(ghost.x/tileSize);
+               // System.out.println(cell);
+                if (cell == 'X') {
+                    // pared, se detiene la visión
+                    break;
+                }
+
+                if ((pacman.x/tileSize == ghost.x/tileSize) && pacman.y/tileSize==row ) {
+                    ghost.updateDirection('D'); // Down
+                    System.out.println("PACMAN SEEN DOWNWARDS");
+                    break;
+                }
+            }
+
+           for (int column = ghost.x + 1; column < tileMap.length; column++) { //++X
+               char cell = tileMap[column].charAt(ghost.y);
+
+               if (cell == 'X') {
+                   // pared, se detiene la visión
+                   break;
+               }
+
+               if (cell == 'P') {
+                   ghost.updateDirection('R'); // Down
+                   System.out.println("PACMAN SEEN RIGHT");
+                   break;
+               }
+           }
+
 
            ghost.x += ghost.velocityX;
            ghost.y += ghost.velocityY;
@@ -456,6 +497,24 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                gameLoop.stop();
                System.out.println("Pause");
                paused = true;
+               System.out.println(tileMap);
+               for(Block ghost : ghosts) {
+                   for (int row = (ghost.y / tileSize) + 1; row < tileMap.length; row++) { //++Y
+                       char cell = tileMap[row].charAt(ghost.x / tileSize);
+                       System.out.println(cell);
+                       if (cell == 'X') {
+                           // pared, se detiene la visión
+                           //break;
+                       }
+
+                       if (cell == 'P') {
+                           ghost.updateDirection('D'); // Down
+                           System.out.println("PACMAN SEEN DOWNWARDS");
+                           // break;
+                       }
+                   }
+               }
+
            }
        }
    }
