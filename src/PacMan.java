@@ -161,7 +161,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             "X XX X XXXXX X XX X",
             "X    X       X    X",
             "XXXX XXXX XXXX XXXX",
-            "OOOX X       X XOOO",
+            "OOOX X   b   X XOOO",
             "XXXX X XXrXX X XXXX",
             "O                 O",
             "XXXX X XXXXX X XXXX",
@@ -215,11 +215,15 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     int lives = 3;
     boolean gameOver = false;
 
+    int blueGhostCounter;
+
    PacMan() {
        setPreferredSize(new Dimension(boardWidth, boardHeight));
        setBackground(Color.BLACK);
        addKeyListener(this);
        setFocusable(true);
+
+       blueGhostCounter = 0;
 
        //load Ghost images
        wallImage = new ImageIcon(getClass().getResource("./wall.png")).getImage();
@@ -236,8 +240,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
        loadMap();
        for(Block ghost:ghosts){
-           char newDirection = directions[random.nextInt(4)];
-           ghost.updateDirection(newDirection);
+           char newDirection = 'N';
+           if(ghost.image == blueGhostImage){
+               newDirection = blueGhostMovement(blueGhostCounter);
+               ghost.updateDirection(newDirection);
+           }else {
+               newDirection = directions[random.nextInt(4)];
+               ghost.updateDirection(newDirection);
+           }
        }
        gameLoop = new Timer(50, this);
        gameLoop.start();
@@ -359,8 +369,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
        pacman.x += pacman.velocityX;
        pacman.y += pacman.velocityY;
 
-
-
        //check void collisions
        if (pacman.x < 0) {
            pacman.x = 21*tileSize;
@@ -396,19 +404,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                ghost.updateDirection('U');
            }
 
-           //look out for PacMan DONT FORGERT TILESIZE
-                //#1 check if blocks around are not walls
-
-                    //#2 check if pacman is in +y
-
-
-
-                    // for same x
-//           System.out.println('X');
-//           System.out.println(ghost.x/tileSize);
-//           System.out.println('y');
-//           System.out.println(ghost.y/tileSize);
-
            for (int row = (ghost.y/tileSize) + 1; row < tileMap.length; row++) { //++Y
                 char cell = tileMap[row].charAt(ghost.x/tileSize);
                // System.out.println(cell);
@@ -424,21 +419,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                 }
             }
 
-           for (int column = ghost.x + 1; column < tileMap.length; column++) { //++X
-               char cell = tileMap[column].charAt(ghost.y);
-
-               if (cell == 'X') {
-                   // pared, se detiene la visión
-                   break;
-               }
-
-               if (cell == 'P') {
-                   ghost.updateDirection('R'); // Down
-                   System.out.println("PACMAN SEEN RIGHT");
-                   break;
-               }
-           }
-
 
            ghost.x += ghost.velocityX;
            ghost.y += ghost.velocityY;
@@ -446,8 +426,17 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                if(collision(ghost, wall) || ghost.x <= 0 ||  ghost.x + ghost.width >= boardWidth){
                    ghost.x -= ghost.velocityX;
                    ghost.y -= ghost.velocityY;
-                   char newDirection = directions[random.nextInt(4)];
-                   ghost.updateDirection(newDirection);
+                   char newDirection = 'N';
+
+                   // go or Blue Image  function// else
+                   if(ghost.image == blueGhostImage){
+                       blueGhostCounter += 1;
+                       newDirection = blueGhostMovement(blueGhostCounter);
+                       ghost.updateDirection(newDirection);
+                   }else {
+                       newDirection = directions[random.nextInt(4)];
+                       ghost.updateDirection(newDirection);
+                   }
                }
            }
        }
@@ -466,6 +455,21 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
            loadMap2();
            resetPositions();
        }
+   }
+
+   char blueGhostMovement(int counter){
+       char newDirection = 'N';
+        if(counter == 0){
+            newDirection = 'L';
+            System.out.println("Went Left");
+            return newDirection;
+
+        } else if (counter == 1) {
+            newDirection = 'D';
+            System.out.println("Went down");
+            return newDirection;
+        }
+       return 'D';
    }
 
    boolean collision(Block a, Block b) {
